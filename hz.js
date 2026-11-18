@@ -77,20 +77,21 @@
     const titles = $$('.hero-title', hero), discs = $$('.discs .disc', hero), desc = $('.hero-desc', hero);
     const fromGate = html.classList.contains('from-gate');
     /* arrival (ours, using the grammar): photo settles, wordmark chars arrive, then the labels */
+    if (reduce) G.set([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 1 });
     if (!reduce) {
       if (!fromGate) {
         const tl = G.timeline();
         tl.from(photo, { scale: 1.12, duration: 2.2, ease: 'power3.out' }, 0).from(cut, { scale: 1.16, duration: 2.2, ease: 'power3.out' }, 0);
-        tl.add(titleIn(word), 0.35);
-        tl.from([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12, duration: 0.8, stagger: 0.08, ease: DE }, 0.9);
+        tl.fromTo(word, { opacity: 0, y: 18, scale: 1.035 }, { opacity: 1, y: 0, scale: 1, duration: 1.6, ease: 'expo.out' }, 0.35);
+        tl.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: DE }, 0.9);
       } else {
-        G.from([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12, duration: 0.8, stagger: 0.08, ease: DE, delay: 0.15 });
+        G.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: DE, delay: 0.35 });
       }
     }
     /* wordmark → header mark (measured: scale 152/1360, y up, over 0 → .5 innerHeight, scrub) */
     const mark = $('.hd-mark');
     const toMark = () => {
-      const w = word.getBoundingClientRect(), m = mark.getBoundingClientRect();
+      const w = ($('.wm', word) || word).getBoundingClientRect(), m = ($('span', mark) || mark).getBoundingClientRect();
       const s = (m.width / Math.max(w.width, 1));
       return { s, dy: (m.top + m.height / 2) - (w.top + w.height / 2) };
     };

@@ -16,7 +16,14 @@
 }
 @media(max-width:1023px){:root{--viewport:375;--viewheight:812;--pad:1.25rem}}
 @view-transition{navigation:auto}
-::view-transition-old(root),::view-transition-new(root){animation-duration:.45s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
+/* no crossfade dip: the old page stays fully opaque while the (identical) new one fades in over it */
+/* gate -> landing: the stage carries one view-transition-name on both pages, so the browser morphs it in place;
+   the root does a hard cut underneath (nothing dims). Everything else on the landing fades in by GSAP afterwards. */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-group(stage){animation-duration:.01s}
+::view-transition-old(stage){animation:none;opacity:1}
+::view-transition-new(stage){animation:none;opacity:1}
+.gate .stage,.hero .stage{view-transition-name:stage}
 *,*::before,*::after{box-sizing:border-box}
 html,body{-webkit-font-smoothing:antialiased;background:var(--base0);color:var(--ink);font-size:calc(16/var(--viewport)*100vw);-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:var(--mono);overflow-x:clip}
@@ -456,6 +463,19 @@ html.js.no-motion .anim-text{visibility:visible}
   .disc.is-hot .dcardx,.disc--now.is-hot .dcardx,.disc--soon.is-hot .dcardx{transform:none}
 }
 @media(max-width:1023px){.door:first-child{padding-top:4.25rem}.door:last-child{padding-bottom:3rem}}
+
+/* stage wordmark = outlined SVG (src/wordmark.svg, cut from Cormorant 300 with .06em tracking): identical on the gate's
+   last frame and the landing's first frame, nothing waits for a font */
+.stage-word{height:1em;letter-spacing:0;padding-left:0;text-shadow:none}
+.stage-word .wm{position:absolute;left:50%;top:-.1055em;height:1.211em;width:auto;transform:translateX(-50%);fill:currentColor;overflow:visible;filter:drop-shadow(0 .5rem 2rem #0b2a3a26)}
+
+/* the hero scrim lives in the shared stage so the gate's last frame and the landing's first frame match */
+.stage-scrim{position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 38% at 50% 50%,#0b2a3a40,#0b2a3a00 70%),linear-gradient(180deg,#0000 55%,#0005)}
+.stage-scrim{z-index:1}.stage-word{z-index:2}.stage-cut{z-index:3}
+
+/* landing chrome starts hidden before first paint (no flash before the fade-in); failsafe below if JS never runs */
+html.js body[data-page="home"] .hd,html.js .hero-desc,html.js .hero-loc,html.js .hero-scroll{opacity:0}
+html.js.no-motion body[data-page="home"] .hd,html.js.no-motion .hero-desc,html.js.no-motion .hero-loc,html.js.no-motion .hero-scroll{opacity:1}
 
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */

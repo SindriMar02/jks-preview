@@ -143,7 +143,7 @@
       .to(line, { opacity: 0, duration: 0.8, ease: 'power2.out' }, 0.7)
       .set(stage, { visibility: 'visible' }, 1.3)
       .fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 1.3)
-      .fromTo($('.stage-word', stage), { opacity: 0, y: 28, letterSpacing: '0.12em' }, { opacity: 1, y: 0, letterSpacing: () => getComputedStyle($('.stage-word', stage)).letterSpacing, duration: 1.1, ease: 'expo.out' }, 1.4);
+      .fromTo($('.stage-word', stage), { opacity: 0, y: 18, scale: 1.035 }, { opacity: 1, y: 0, scale: 1, duration: 1.3, ease: 'expo.out', transformOrigin: '50% 50%' }, 1.3);
   }
 
   /* ---------- arrival: the drawing appears like ink, door names rise ---------- */
