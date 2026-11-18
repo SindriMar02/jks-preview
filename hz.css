@@ -455,6 +455,7 @@ html.js.no-motion .anim-text{visibility:visible}
   .disc--now .dcardx,.disc--soon .dcardx{left:var(--pad);right:var(--pad);transform:translateY(1.25rem)}
   .disc.is-hot .dcardx,.disc--now.is-hot .dcardx,.disc--soon.is-hot .dcardx{transform:none}
 }
+@media(max-width:1023px){.door:first-child{padding-top:4.25rem}.door:last-child{padding-bottom:3rem}}
 
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
