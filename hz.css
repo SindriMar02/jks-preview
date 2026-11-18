@@ -449,6 +449,12 @@ html.js.no-motion .anim-text{visibility:visible}
 @media(max-width:1023px){.guide-grid--text .gcard--text{padding:2rem var(--pad);min-height:0}}
 /* phone overrides kept last */
 @media(max-width:1023px){.acards--2,.acards--3,.acards--5{display:flex}}
+/* phone: the disc card is a small sheet on the bottom edge (a card beside a disc near the top would leave the screen) */
+@media(max-width:1023px){
+  .dcardx{position:fixed;left:var(--pad);right:var(--pad);bottom:calc(1.25rem + env(safe-area-inset-bottom));top:auto;width:auto;grid-template-columns:6rem 1fr;transform:translateY(1.25rem)}
+  .disc--now .dcardx,.disc--soon .dcardx{left:var(--pad);right:var(--pad);transform:translateY(1.25rem)}
+  .disc.is-hot .dcardx,.disc--now.is-hot .dcardx,.disc--soon.is-hot .dcardx{transform:none}
+}
 
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
