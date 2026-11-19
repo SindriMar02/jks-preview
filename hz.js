@@ -61,6 +61,8 @@
     ST.create({ start: 0, end: 'max', onUpdate: (s) => {
       const y = s.scroll(), down = y > last && y > 200; last = y;
       if (!html.classList.contains('menu-open')) hd.classList.toggle('is-hidden', down);
+      /* past the hero the header carries its own frosted bar: readable over photos, panels and pale sections alike (iOS pass 19 Nov) */
+      const hr = $('#hero'); hd.classList.toggle('is-solid', !hr || hr.getBoundingClientRect().bottom < hd.offsetHeight);
     } });
     $$('[data-theme]').forEach((sec) => {
       if (sec === hd) return;

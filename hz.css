@@ -713,6 +713,14 @@ dialog.nd.is-on .nd-card{transform:none}
 .hero-loc{text-shadow:0 1px 2px #0b2a3acc,0 2px 14px #0b2a3a99}
 @media(max-width:1023px){.hero-desc{font-size:.8125rem}}
 
+/* header bar past the hero: frosted sand, ink text; fades in, never switches */
+.hd::before{content:"";position:absolute;inset:0;z-index:-1;background:#e5e0d9d9;-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);opacity:0;transition:opacity .5s var(--easing)}
+.hd.is-solid::before{opacity:1}
+.hd.is-solid{color:var(--ink);text-shadow:none}
+.hd.is-solid .pill{background:transparent;text-shadow:none}
+html.menu-open .hd::before{opacity:0}
+@media(hover:hover){.hd.is-solid .pill:hover{background:var(--brand);color:var(--w)}}
+
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
 html[data-input="pointer"] :focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) { outline: none; }
