@@ -353,6 +353,15 @@
     const go = () => { if (lenis) lenis.scrollTo(y, { duration: 1.6 }); else scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' }); };
     if (html.classList.contains('menu-open')) setTimeout(go, reduce ? 0 : 650); else go();
   });
+  /* FAQ: one answer open at a time; the height animates in CSS (grid rows), the button carries the state */
+  $$('.faq-b').forEach((b) => b.addEventListener('click', () => {
+    const li = b.closest('.faq-i'), open = !li.classList.contains('is-open');
+    $$('.faq-i.is-open').forEach((o) => { if (o !== li) { o.classList.remove('is-open'); $('.faq-b', o).setAttribute('aria-expanded', 'false'); } });
+    li.classList.toggle('is-open', open); b.setAttribute('aria-expanded', String(open));
+    setTimeout(() => ST.refresh(), 850);
+  }));
+  /* a maps link inside a row opens Google Maps without also re-picking the row */
+  $$('.lrow-map').forEach((a) => a.addEventListener('click', (e) => e.stopPropagation()));
   html.classList.add('ready');
   addEventListener('load', () => ST.refresh());
   document.fonts && document.fonts.ready.then(() => ST.refresh());

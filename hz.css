@@ -772,6 +772,62 @@ html{scrollbar-gutter:stable}
 /* behind the hero photo: the lagoon's own sand tone, never black (a frame before decode can never flash dark) */
 .hero-in{background:#cfc6b8}
 
+/* Google Maps: every place opens a route from the resort (Sindri 19 Nov: easy, super user friendly) */
+.lrow{grid-template-columns:11rem 1fr auto}
+.lrow-map{display:inline-flex;align-items:center;gap:.5rem;height:2.5rem;padding:0 .9rem 0 .75rem;border-radius:2rem;box-shadow:inset 0 0 0 1px var(--ink30);color:var(--ink);opacity:.55;transition:opacity .6s var(--easing),background-color .5s var(--easing),color .5s var(--easing),box-shadow .5s var(--easing);white-space:nowrap}
+.lrow-map svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.lrow-map svg:last-child{width:.8rem;height:.8rem;transition:transform .5s var(--easing)}
+.lrow.is-on .lrow-map{opacity:1}
+@media(hover:hover){.lrow-map:hover{background:var(--brand);color:var(--w);box-shadow:inset 0 0 0 1px var(--brand)}.lrow-map:hover svg:last-child{transform:translate(2px,-2px)}}
+.lrow-map:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+.loc-side{display:flex;flex-direction:column;align-items:flex-end;gap:1.25rem;text-align:right}
+.loc-gmaps{display:inline-flex;align-items:center;gap:.5rem;padding-bottom:.25rem;border-bottom:1px solid var(--ink30);transition:border-color .5s var(--easing)}
+.loc-gmaps svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.loc-gmaps svg:last-child{width:.8rem;height:.8rem;transition:transform .5s var(--easing)}
+@media(hover:hover){.loc-gmaps:hover{border-color:var(--ink)}.loc-gmaps:hover svg:last-child{transform:translate(2px,-2px)}}
+@media(max-width:1023px){
+  .lrow{grid-template-columns:6.5rem 1fr auto}
+  .lrow-map{opacity:1;padding:0;width:2.75rem;height:2.75rem;justify-content:center}
+  .lrow-map span,.lrow-map svg:last-child{display:none}
+  .loc-side{align-items:flex-start;text-align:left}
+}
+
+/* FAQ: numbered hairline list; the answer opens by animating its row height (grid 0fr -> 1fr), plus turns to minus */
+.faq{padding:10rem var(--pad) 9rem;background:var(--base0);display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:4rem}
+.faq-head .h1{margin-top:1.25rem;max-width:26rem}
+.faq-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--ink10)}
+.faq-i{border-bottom:1px solid var(--ink10);position:relative}
+.faq-i::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform 1s var(--easing)}
+.faq-i.is-open::after{transform:scaleX(1)}
+.faq-q{margin:0;font:inherit}
+.faq-b{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:3.5rem 1fr 2.5rem;align-items:center;gap:1rem;padding:1.75rem 0;cursor:pointer;color:var(--ink)}
+.faq-b:focus-visible{outline:1px solid var(--ink);outline-offset:-1px}
+.faq-n{opacity:.5}
+.faq-qt{transition:transform 1s var(--easing),opacity .6s var(--easing)}
+.faq-list:has(.is-open) .faq-i:not(.is-open) .faq-qt{opacity:.55}
+.faq-i.is-open .faq-qt{transform:translateX(.5rem)}
+@media(hover:hover){.faq-b:hover .faq-qt{transform:translateX(.5rem)}}
+.faq-x{position:relative;width:2.5rem;height:2.5rem;border-radius:50%;box-shadow:inset 0 0 0 1px var(--ink30);transition:background-color .5s var(--easing),box-shadow .5s var(--easing)}
+.faq-x::before,.faq-x::after{content:"";position:absolute;left:50%;top:50%;width:.8rem;height:1px;background:currentColor;transform:translate(-50%,-50%);transition:transform .7s var(--easing),opacity .5s var(--easing)}
+.faq-x::after{transform:translate(-50%,-50%) rotate(90deg)}
+.faq-i.is-open .faq-x::after{transform:translate(-50%,-50%) rotate(0deg);opacity:0}
+.faq-i.is-open .faq-x{background:var(--brand);color:var(--w);box-shadow:inset 0 0 0 1px var(--brand)}
+.faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .8s var(--easing)}
+.faq-i.is-open .faq-a{grid-template-rows:1fr}
+.faq-a-in{overflow:hidden;min-height:0}
+.faq-a .p1{padding:0 2.5rem 2rem 4.5rem;max-width:38rem;opacity:0;transform:translateY(-.5rem);transition:opacity .6s var(--easing),transform .8s var(--easing)}
+.faq-i.is-open .faq-a .p1{opacity:1;transform:none;transition-delay:.12s}
+@media(max-width:1023px){
+  .faq{grid-template-columns:1fr;gap:2.5rem;padding:5.5rem var(--pad) 5rem}
+  .faq-b{grid-template-columns:2.25rem 1fr 2.5rem;padding:1.35rem 0;gap:.75rem}
+  .faq-a .p1{padding:0 0 1.5rem 3rem}
+}
+@media(prefers-reduced-motion:reduce){.faq-a,.faq-a .p1,.faq-x::before,.faq-x::after,.faq-qt{transition:none}}
+
+/* the answer sits under the shifted question */
+.faq-a .p1{padding-left:5rem}
+@media(max-width:1023px){.faq-a .p1{padding-left:3.5rem}}
+
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
 html[data-input="pointer"] :focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) { outline: none; }
