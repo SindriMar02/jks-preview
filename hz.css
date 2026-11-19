@@ -729,6 +729,23 @@ html.menu-open .hd::before{opacity:0}
 /* golf label: below the point, starting inside the frame (was clipped at the left edge on desktop) */
 .mp-pt[data-i="2"] .mp-lbl{text-anchor:start;transform:translate(-70px,10px)}
 
+/* footer small print: lines never touch when they wrap (iOS pass 19 Nov) */
+.ft-end span{line-height:1.65}
+
+/* phone gate: three bloomed doors always fit between the mark and the place line (iOS pass 19 Nov: Español ran under Safari's bar) */
+@media(max-width:1023px){
+  .doors{top:3.5rem;bottom:2.75rem}
+  .door{flex:1 1 0;min-height:0;gap:.35rem;padding:.25rem var(--pad)}
+  .door.is-on{flex-grow:1}
+  .door-code{display:none}
+  .door-name{font-size:2.5rem;line-height:1.04}
+  .door-hello,.door-foot .door-hello{margin-top:.2rem;font-size:1.3rem}
+  .door-smart,.door-foot .door-smart{margin-top:.15rem;gap:.1rem;font-size:.6875rem;line-height:1.5}
+  .door-go,.door-foot .door-go{margin-top:.45rem}
+  .door-go span{padding:.55rem 1rem}
+}
+@media(max-width:1023px){.door:first-child,.door:last-child{padding:.25rem var(--pad)}}
+
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
 html[data-input="pointer"] :focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) { outline: none; }
