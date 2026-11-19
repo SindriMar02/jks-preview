@@ -57,10 +57,13 @@
   /* ---------- header: theme per section, hide on scroll down (§4 header) ---------- */
   const hd = $('.hd');
   if (hd) {
-    let last = 0;
+    /* a deep link or reload lands mid-page: that jump is not a scroll down, so it never hides the header */
+    let last = -1;
+    const solid = () => { const hr = $('#hero'); hd.classList.toggle('is-solid', !hr || hr.getBoundingClientRect().bottom < hd.offsetHeight); };
+    solid(); addEventListener('load', solid); addEventListener('hashchange', solid);
     ST.create({ start: 0, end: 'max', onUpdate: (s) => {
       const hr0 = $('#hero'), past = !hr0 || hr0.getBoundingClientRect().bottom < hd.offsetHeight;
-      const y = s.scroll(), down = past && y > last && y > 200; last = y;
+      const y = s.scroll(), down = last >= 0 && past && y > last && y > 200; last = y;
       if (!html.classList.contains('menu-open')) hd.classList.toggle('is-hidden', down);
       /* past the hero the header carries its own frosted bar: readable over photos, panels and pale sections alike (iOS pass 19 Nov) */
       const hr = $('#hero'); hd.classList.toggle('is-solid', !hr || hr.getBoundingClientRect().bottom < hd.offsetHeight);

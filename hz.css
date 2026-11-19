@@ -828,6 +828,9 @@ html{scrollbar-gutter:stable}
 .faq-a .p1{padding-left:5rem}
 @media(max-width:1023px){.faq-a .p1{padding-left:3.5rem}}
 
+/* in-page and deep-link anchors land below the header bar */
+section [id$="-t"],#main{scroll-margin-top:6.5rem}
+
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
 html[data-input="pointer"] :focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) { outline: none; }
