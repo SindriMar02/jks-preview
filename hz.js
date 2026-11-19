@@ -76,31 +76,40 @@
     const word = $('.stage-word', hero), photo = $('.stage-photo', hero), cut = $('.stage-cut', hero);
     const titles = $$('.hero-title', hero), discs = $$('.discs .disc', hero), desc = $('.hero-desc', hero);
     const fromGate = html.classList.contains('from-gate');
+    /* ALMENDRO: eight outlined letters rise one at a time from behind the palms (the sky-free cutout sits in front),
+       each easing out while the next starts, so it reads as one wave. Letters start hidden in CSS before first paint. */
+    const letters = $$('.wm-l', word);
+    function lettersIn(delay) {
+      G.set(word, { autoAlpha: 1 });
+      return G.fromTo(letters, { yPercent: 62, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.7, ease: 'expo.out', stagger: { each: 0.085 }, delay });
+    }
+    if (reduce) G.set(letters, { opacity: 1, yPercent: 0 });
     /* arrival (ours, using the grammar): photo settles, wordmark chars arrive, then the labels */
     if (reduce) G.set([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 1 });
     if (!reduce) {
       if (!fromGate) {
         const tl = G.timeline();
         tl.from(photo, { scale: 1.12, duration: 2.2, ease: 'power3.out' }, 0).from(cut, { scale: 1.16, duration: 2.2, ease: 'power3.out' }, 0);
-        tl.fromTo(word, { opacity: 0, y: 18, scale: 1.035 }, { opacity: 1, y: 0, scale: 1, duration: 1.6, ease: 'expo.out' }, 0.35);
+        tl.add(lettersIn(0.55), 0);
         tl.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: DE }, 0.9);
       } else {
+        lettersIn(0.15);
         G.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: DE, delay: 0.35 });
       }
     }
     /* wordmark → header mark (measured: scale 152/1360, y up, over 0 → .5 innerHeight, scrub) */
     const mark = $('.hd-mark');
     const toMark = () => {
-      const w = ($('.wm', word) || word).getBoundingClientRect(), m = ($('span', mark) || mark).getBoundingClientRect();
+      const w = ($('.wm', word) || word).getBoundingClientRect(), m = ($('.wm', mark) || mark).getBoundingClientRect();
       const s = (m.width / Math.max(w.width, 1));
       return { s, dy: (m.top + m.height / 2) - (w.top + w.height / 2) };
     };
     let tm = toMark();
     G.to(word, { scale: () => tm.s, y: () => tm.dy, ease: 'none', transformOrigin: '50% 50%',
-      scrollTrigger: { trigger: hero, start: 0, end: () => innerHeight * 0.5, scrub: true, invalidateOnRefresh: true,
+      scrollTrigger: { trigger: hero, start: 0, end: () => innerHeight * 0.5, scrub: 0.6, invalidateOnRefresh: true,
         onRefreshInit: () => { G.set(word, { clearProps: 'transform' }); tm = toMark(); },
-        onLeave: () => { hd.classList.add('mark-in'); G.set(word, { autoAlpha: 0 }); },
-        onEnterBack: () => { hd.classList.remove('mark-in'); G.set(word, { autoAlpha: 1 }); } } });
+        onLeave: () => { hd.classList.add('mark-in'); G.to(word, { autoAlpha: 0, duration: 0.35, ease: 'power1.out', overwrite: 'auto' }); },
+        onEnterBack: () => { hd.classList.remove('mark-in'); G.to(word, { autoAlpha: 1, duration: 0.25, ease: 'power1.out', overwrite: 'auto' }); } } });
     /* description lines out (measured: yPercent 20, autoAlpha 0, stagger -.15, 0 → .5 innerHeight) */
     if (Split && desc) { const sp = new Split(desc, { type: 'lines' }); G.to(sp.lines, { yPercent: 20, autoAlpha: 0, stagger: -0.15, ease: 'none', scrollTrigger: { trigger: hero, start: 0, end: () => innerHeight * 0.5, scrub: true } }); }
     G.to([$('.hero-loc', hero), $('.hero-scroll', hero)], { autoAlpha: 0, ease: 'none', scrollTrigger: { trigger: hero, start: 0, end: () => innerHeight * 0.4, scrub: true } });
@@ -163,21 +172,45 @@
         const inn = Split ? new Split(descEl, { type: 'lines' }).lines : [descEl];
         G.from(inn, { yPercent: 20, autoAlpha: 0, duration: 0.4, stagger: 0.05, ease: DE });
       } });
-      cur = to;
+      cur = to; if (cnt) cnt.textContent = String(to + 1).padStart(2, '0');
     };
     btns.forEach((b, i) => b.addEventListener('click', () => go(i)));
+    const cnt = $('.int-n', interior);
+    $$('.int-b', interior).forEach((b) => b.addEventListener('click', () => go((cur + +b.dataset.d + photos.length) % photos.length)));
+    $('.int-photos', interior).addEventListener('click', (e) => { if (!e.target.closest('.pt')) go((cur + 1) % photos.length); });
     photos.forEach((p, i) => { if (i) G.set(p, { zIndex: -1 }); });
     interior.addEventListener('click', (e) => { const p = e.target.closest('.pt'); if (!p) return; const was = p.classList.contains('is-open'); $$('.pt.is-open', interior).forEach((x) => x.classList.remove('is-open')); if (!was) p.classList.add('is-open'); });
   }
 
   /* ---------- location cards: active card opens its photo (§4.4) + numbers count up (ours) ---------- */
+  /* the drawn map: the coast inks in once (like the gate drawing), then the routes; a list row lights its route */
+  $$('.loc-map').forEach((m) => {
+    const coast = $$('.mp-coast path', m);
+    coast.forEach((pth) => { const L = pth.getTotalLength(); pth.style.strokeDasharray = L; pth.style.strokeDashoffset = reduce ? 0 : L; });
+    if (!reduce) {
+      G.set($$('.mp-sea, .mp-minor, .mp-pt, .mp-home, .mp-routes', m), { autoAlpha: 0 });
+      ST.create({ trigger: m, start: 'top 80%', once: true, onEnter: () => {
+        G.to(coast, { strokeDashoffset: 0, duration: 2.6, ease: 'power3.inOut', stagger: 0.004 });
+        G.to($$('.mp-sea, .mp-minor', m), { autoAlpha: 1, duration: 1.2, ease: DE, delay: 1.2, stagger: 0.08 });
+        G.to($$('.mp-home, .mp-pt', m), { autoAlpha: 1, duration: 1, ease: DE, delay: 1.6, stagger: 0.1 });
+        G.to($('.mp-routes', m), { autoAlpha: 1, duration: 1.2, ease: DE, delay: 2.1 });
+      } });
+    }
+  });
+  $$('.loc-body').forEach((lb) => {
+    const rows = $$('.lrow', lb), phs = $$('.lph', lb);
+    const marks = $$('.mp-route, .mp-pt', lb);
+    const pick = (i) => { rows.forEach((r, j) => r.classList.toggle('is-on', j === i)); phs.forEach((ph, j) => ph.classList.toggle('is-on', j === i)); marks.forEach((m) => m.classList.toggle('is-on', +m.dataset.i === i)); lb.classList.add('has-pick'); };
+    pick(0);
+    rows.forEach((r, i) => { r.addEventListener('mouseenter', () => pick(i)); r.addEventListener('focus', () => pick(i)); r.addEventListener('click', () => pick(i)); });
+  });
   const dcards = $$('.dcard');
   dcards.forEach((c) => {
     const on = () => { dcards.forEach((x) => x.classList.toggle('is-on', x === c)); };
     c.addEventListener('mouseenter', on); c.addEventListener('focus', on); c.addEventListener('click', on);
   });
   const nums = $$('.dcard-n');
-  if (nums.length && !reduce) ST.create({ trigger: '.dcards', start: 'top 85%', once: true, onEnter: () => nums.forEach((el, i) => {
+  if (nums.length && !reduce) ST.create({ trigger: '.lrows', start: 'top 85%', once: true, onEnter: () => nums.forEach((el, i) => {
     const to = +el.dataset.n, o = { v: 0 }; G.to(o, { v: to, duration: 0.9, delay: i * 0.08, ease: DE, onUpdate: () => { el.textContent = Math.round(o.v); } });
   }) });
 
@@ -286,6 +319,15 @@
     reduce ? swap() : G.to(nf, { autoAlpha: 0, duration: 0.3, onComplete: swap });
   });
 
+  /* stays: the two panels rise in as the section arrives (photo settles inside its frame) */
+  const sps = $$('.sp');
+  if (sps.length && !reduce) {
+    G.set(sps, { clipPath: 'inset(14% 0% 0% 0%)', y: 60, autoAlpha: 0 });
+    ST.create({ trigger: '.sp-row', start: 'top 82%', once: true, onEnter: () => {
+      G.to(sps, { clipPath: 'inset(0% 0% 0% 0%)', y: 0, autoAlpha: 1, duration: 1.5, ease: 'expo.out', stagger: 0.14 });
+      G.fromTo($$('.sp-ph img'), { scale: 1.18 }, { scale: 1.06, duration: 2, ease: 'expo.out', stagger: 0.14 });
+    } });
+  }
   html.classList.add('ready');
   addEventListener('load', () => ST.refresh());
   document.fonts && document.fonts.ready.then(() => ST.refresh());

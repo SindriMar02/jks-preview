@@ -57,7 +57,8 @@
     const now = new Date(), diff = offsetH(TZ, now) - offsetH('Atlantic/Reykjavik', now), ss = hm(sunset(now));
     doors.forEach((d) => {
       const dl = d.dataset;
-      $('.door-smart', d).textContent = dl.smart === 'tz' ? `${dl.lClock} ${hm(now)} · ${diff ? `${diff} ${dl.lAhead}` : dl.lSame}` : `${dl.lClock} ${hm(now)} · ${dl.lSunset} ${ss}`;
+      const two = dl.smart === 'tz' ? [`${dl.lClock} ${hm(now)}`, diff ? `${diff} ${dl.lAhead}` : dl.lSame] : [`${dl.lClock} ${hm(now)}`, `${dl.lSunset} ${ss}`];
+      $('.door-smart', d).innerHTML = two.map((x) => `<span>${x}</span>`).join('');
     });
   };
   tick(); setInterval(tick, 20000);
@@ -142,8 +143,7 @@
       .to(p, { tx: W / 2, ty: H / 2, duration: 1.5, ease: 'power2.inOut' }, 0)
       .to(line, { opacity: 0, duration: 0.8, ease: 'power2.out' }, 0.7)
       .set(stage, { visibility: 'visible' }, 1.3)
-      .fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 1.3)
-      .fromTo($('.stage-word', stage), { opacity: 0, y: 18, scale: 1.035 }, { opacity: 1, y: 0, scale: 1, duration: 1.3, ease: 'expo.out', transformOrigin: '50% 50%' }, 1.3);
+      .fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' }, 1.3);
   }
 
   /* ---------- arrival: the drawing appears like ink, door names rise ---------- */
@@ -151,7 +151,7 @@
   if (reduce) { G.set(line, { opacity: 1 }); return; }
   const tl = G.timeline({ delay: 0.15 });
   tl.fromTo(line, { opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)', duration: 2.4, ease: 'power3.inOut' }, 0)
-    .from($$('.door-name, .door-code'), { opacity: 0, y: 24, duration: 1.2, stagger: 0.09, ease: 'expo.out' }, 0.5)
+    .fromTo($$('.door-name, .door-code'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.09, ease: 'expo.out', clearProps: 'opacity,transform', onStart: () => gate.classList.add('is-intro'), onComplete: () => gate.classList.remove('is-intro') }, 0.5)
     .from(['.gate-mark', '.gate-place'], { opacity: 0, duration: 1.2, ease: 'expo.out' }, 0.9);
   /* touch: each door blooms once in sequence (Horizonte opens its panels 200 ms apart on touch) */
   if (touch) tl.add(() => doors.forEach((d, i) => setTimeout(() => {
