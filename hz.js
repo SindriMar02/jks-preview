@@ -251,6 +251,8 @@
     G.set(panel, { xPercent: -100 });
     mBtn.addEventListener('click', (e) => set(!open, e.detail === 0));
     bg.addEventListener('click', () => set(false));
+    /* an in-page link in the menu closes it; the glide waits for the panel (iOS pass 19 Nov: the menu stayed open, page locked) */
+    menu.addEventListener('click', (e) => { if (e.target.closest('a[href^="#"]')) set(false); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) set(false); });
   }
 
@@ -345,7 +347,8 @@
     const a = e.target.closest('a[href^="#"]'); if (!a || a.hasAttribute('data-book') || a.hasAttribute('data-notify') || a.classList.contains('skip')) return;
     const id = a.getAttribute('href'); const el = id.length > 1 && document.querySelector(id); if (!el) return;
     e.preventDefault(); const y = id === '#main' ? 0 : el.getBoundingClientRect().top + scrollY - 120;
-    if (lenis) lenis.scrollTo(y, { duration: 1.6 }); else scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+    const go = () => { if (lenis) lenis.scrollTo(y, { duration: 1.6 }); else scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' }); };
+    if (html.classList.contains('menu-open')) setTimeout(go, reduce ? 0 : 650); else go();
   });
   html.classList.add('ready');
   addEventListener('load', () => ST.refresh());
