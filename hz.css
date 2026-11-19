@@ -210,7 +210,7 @@ html.menu-open .hd{color:var(--ink)}
   .interior{height:auto;padding:6rem 0 2rem;color:var(--ink);background:var(--base0)}
   .int-photos{position:relative;height:22rem;margin-top:1.5rem}
   .int-shade{display:none}
-  .int-head{position:static;padding:0 var(--pad)}
+  .int-head{position:static;padding:2.25rem var(--pad) 0}
   .room-list{position:static;padding:1.5rem var(--pad) 0}
   .int-desc{position:static;padding:1rem var(--pad) 0;max-width:none;min-height:5em}
   .int-facts{position:static;padding:1.5rem var(--pad);text-align:left;justify-content:start}
@@ -720,6 +720,14 @@ dialog.nd.is-on .nd-card{transform:none}
 .hd.is-solid .pill{background:transparent;text-shadow:none}
 html.menu-open .hd::before{opacity:0}
 @media(hover:hover){.hd.is-solid .pill:hover{background:var(--brand);color:var(--w)}}
+
+/* phone map: labels clear of the coast and of their own routes (iOS pass 19 Nov) */
+@media(max-width:1023px){
+  .mp-pt[data-i="1"] .mp-lbl{text-anchor:end;transform:translate(-34px,34px)}
+  .mp-home text{transform:translate(70px,-46px)}
+}
+/* golf label: below the point, starting inside the frame (was clipped at the left edge on desktop) */
+.mp-pt[data-i="2"] .mp-lbl{text-anchor:start;transform:translate(-70px,10px)}
 
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
