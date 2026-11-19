@@ -327,6 +327,24 @@
       G.fromTo($$('.sp-ph img'), { scale: 1.18 }, { scale: 1.06, duration: 2, ease: 'expo.out', stagger: 0.14 });
     } });
   }
+  /* register interest (penthouse): a small dialog on the landing; pointer open focuses the card, keyboard the field */
+  const nd = $('#notify');
+  if (nd) {
+    let opener = null;
+    const card = $('.nd-card', nd);
+    const openN = (tr, key) => { opener = tr; lock(true); nd.showModal(); requestAnimationFrame(() => nd.classList.add('is-on')); (key ? $('input[name=email]', nd) : card).focus({ preventScroll: true }); };
+    const closeN = () => { if (!nd.open) return; nd.classList.remove('is-on'); setTimeout(() => { nd.close(); lock(false); opener && opener.focus && opener.focus({ preventScroll: true }); }, reduce ? 0 : 450); };
+    document.addEventListener('click', (e) => { const tr = e.target.closest('[data-notify]'); if (!tr) return; if (tr.classList.contains('disc--soon') && !tr.classList.contains('disc--inline') && false) return; e.preventDefault(); openN(tr, e.detail === 0); });
+    nd.addEventListener('cancel', (e) => { e.preventDefault(); closeN(); });
+    $$('[data-nd-close]', nd).forEach((x) => x.addEventListener('click', closeN));
+  }
+  /* in-page anchors (menu, footer) glide with Lenis */
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]'); if (!a || a.hasAttribute('data-book') || a.hasAttribute('data-notify') || a.classList.contains('skip')) return;
+    const id = a.getAttribute('href'); const el = id.length > 1 && document.querySelector(id); if (!el) return;
+    e.preventDefault(); const y = id === '#main' ? 0 : el.getBoundingClientRect().top + scrollY - 120;
+    if (lenis) lenis.scrollTo(y, { duration: 1.6 }); else scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+  });
   html.classList.add('ready');
   addEventListener('load', () => ST.refresh());
   document.fonts && document.fonts.ready.then(() => ST.refresh());
