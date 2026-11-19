@@ -746,6 +746,32 @@ html.menu-open .hd::before{opacity:0}
 }
 @media(max-width:1023px){.door:first-child,.door:last-child{padding:.25rem var(--pad)}}
 
+/* NO dark halos behind type (Sindri 19 Nov: "the black shadow behind the texts looks so ass").
+   Readability comes from an even, light tint over the whole photo instead: no blurred text shadows, no dark blobs. */
+.door.is-on,.door.is-on .door-hello,.door.is-on .door-smart,.door.is-on .door-code,.gate-mark,.gate-place,
+.doors.has-on~.gate-mark,.gate:has(.door.is-on) .gate-mark,.gate:has(.door.is-on) .gate-place,.gate.is-bloomed .gate-mark,.gate.is-bloomed .gate-place,
+.hero-title,.hero-desc,.hero-loc,.disc-st,.hd[data-theme="light"]{text-shadow:none}
+.door::before,.door-foot::before{display:none}
+.door.is-on .door-go span{box-shadow:none}
+.gate-scene::after{content:"";position:absolute;inset:0;background:#0b2a3a;opacity:0;transition:opacity 1.2s var(--easing);pointer-events:none}
+@media(max-width:1023px){.gate.is-bloomed .gate-scene::after{opacity:.24}}
+.gate.is-going .gate-scene::after{opacity:0}
+.stage-scrim{background:linear-gradient(180deg,#0b2a3a40 0%,#0b2a3a00 22%,#0b2a3a00 45%,#0b2a3a80 100%)}
+
+/* smoothness pass (Codex astra audit 19 Nov, verified): no SVG shadow behind ALMENDRO, one frost on the header,
+   same page width on both sides of the hand-over, taps answer at once */
+.stage-word .wm{filter:none}
+.hd.is-solid .pill{-webkit-backdrop-filter:none;backdrop-filter:none}
+html{scrollbar-gutter:stable}
+.door{touch-action:manipulation}
+
+/* docking runway: the sticky hero holds still a little past the wordmark-to-header hand-off, so the crossfade never drifts */
+.hero{height:175vh;height:175svh}
+@media(max-width:1023px){.hero{height:165vh;height:165svh}}
+
+/* behind the hero photo: the lagoon's own sand tone, never black (a frame before decode can never flash dark) */
+.hero-in{background:#cfc6b8}
+
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
 html[data-input="pointer"] :focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) { outline: none; }

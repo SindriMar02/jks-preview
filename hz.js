@@ -59,7 +59,8 @@
   if (hd) {
     let last = 0;
     ST.create({ start: 0, end: 'max', onUpdate: (s) => {
-      const y = s.scroll(), down = y > last && y > 200; last = y;
+      const hr0 = $('#hero'), past = !hr0 || hr0.getBoundingClientRect().bottom < hd.offsetHeight;
+      const y = s.scroll(), down = past && y > last && y > 200; last = y;
       if (!html.classList.contains('menu-open')) hd.classList.toggle('is-hidden', down);
       /* past the hero the header carries its own frosted bar: readable over photos, panels and pale sections alike (iOS pass 19 Nov) */
       const hr = $('#hero'); hd.classList.toggle('is-solid', !hr || hr.getBoundingClientRect().bottom < hd.offsetHeight);
@@ -93,10 +94,10 @@
         const tl = G.timeline();
         tl.fromTo([photo, cut], { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2, ease: 'power2.out' }, 0);
         tl.add(lettersIn(0.55), 0);
-        tl.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: DE }, 0.9);
+        tl.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: DE, clearProps: 'transform' }, 0.9);
       } else {
         lettersIn(0.15);
-        G.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: DE, delay: 0.35 });
+        G.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: DE, delay: 0.35, clearProps: 'transform' });
       }
     }
     /* wordmark → header mark (measured: scale 152/1360, y up, over 0 → .5 innerHeight, scrub) */
@@ -104,7 +105,9 @@
     const toMark = () => {
       const w = ($('.wm', word) || word).getBoundingClientRect(), m = ($('.wm', mark) || mark).getBoundingClientRect();
       const s = (m.width / Math.max(w.width, 1));
-      return { s, dy: (m.top + m.height / 2) - (w.top + w.height / 2) };
+      /* the header rests at top 0; it may be mid-arrival (y 12) or hidden: measure the mark relative to the header box */
+      const hy = hd.getBoundingClientRect().top;
+      return { s, dy: (m.top - hy + m.height / 2) - (w.top + w.height / 2) };
     };
     let tm = toMark();
     G.to(word, { scale: () => tm.s, y: () => tm.dy, ease: 'none', transformOrigin: '50% 50%',

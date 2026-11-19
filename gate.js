@@ -13,14 +13,17 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const touch = !matchMedia('(hover: hover) and (pointer: fine)').matches;
   const ctx = cv.getContext('2d');
-  let W = innerWidth, H = innerHeight, DPR = Math.min(devicePixelRatio || 1, 1.75);
+  addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });   // back from the landing: never a frozen exit frame
+  let W = innerWidth, H = innerHeight, DPR = Math.min(devicePixelRatio || 1, 1.5);
+  const MS = 0.5; // the mask is a soft watercolour edge: painted at half resolution and scaled up, 4x less fill per frame
   const mask = document.createElement('canvas'), mctx = mask.getContext('2d');
   const fit = () => {
-    W = innerWidth; H = innerHeight; DPR = Math.min(devicePixelRatio || 1, 1.75);
-    for (const c of [cv, mask]) { c.width = Math.round(W * DPR); c.height = Math.round(H * DPR); }
-    cover = null;
+    W = innerWidth; H = innerHeight; DPR = Math.min(devicePixelRatio || 1, 1.5);
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    mask.width = Math.round(W * DPR * MS); mask.height = Math.round(H * DPR * MS);
+    cover = null; dirty = performance.now() + 1500;
   };
-  let cover = null; // cached cover-fit of the photo
+  let cover = null, dirty = 0; // cached cover-fit of the photo; door layout moving until `dirty`
   const coverRect = () => {
     if (cover || !photo.naturalWidth) return cover;
     const iw = photo.naturalWidth, ih = photo.naturalHeight, s = Math.max(cv.width / iw, cv.height / ih);
@@ -65,13 +68,16 @@
 
   /* ---------- paint state: per door a main bloom + a lagging satellite ---------- */
   const P = doors.map(() => ({ x: W / 2, y: H / 2, sx: W / 2, sy: H / 2, tx: W / 2, ty: H / 2, r: 0, a: 0 }));
-  let going = false, t0 = performance.now(), pointerSeen = false;
+  let intro = null; const bloomTimers = [];
+  let going = false, t0 = performance.now(), pointerSeen = false, drew = true;
+  const navBox = $('.doors');
   const place = () => {
-    if (innerWidth >= 1024) doors.forEach((d, i) => { if (i) { lines[i - 1].style.left = `${d.getBoundingClientRect().left}px`; lines[i - 1].style.top = '0'; } });
-    else doors.forEach((d, i) => { if (i) lines[i - 1].style.top = `${d.getBoundingClientRect().top}px`; });
+    const N = navBox.getBoundingClientRect();
+    if (innerWidth >= 1024) doors.forEach((d, i) => { if (i) { lines[i - 1].style.left = `${d.getBoundingClientRect().left - N.left}px`; lines[i - 1].style.top = '0'; } });
+    else doors.forEach((d, i) => { if (i) lines[i - 1].style.top = `${d.getBoundingClientRect().top - N.top}px`; });
   };
   const draw = (now) => {
-    const t = (now - t0) / 1000, k = DPR;
+    const t = (now - t0) / 1000, k = DPR * MS;
     mctx.setTransform(1, 0, 0, 1, 0, 0); mctx.clearRect(0, 0, mask.width, mask.height);
     let any = false;
     P.forEach((p, i) => {
@@ -87,14 +93,16 @@
       dabAt(p.x, p.y, p.r * breathe, t * 0.05 + i, p.a);
       dabAt(p.sx, p.sy, p.r * 0.72 * breathe, -t * 0.04 + i * 1.7, p.a);
     });
+    if (!any && !drew) { if (now < dirty) place(); requestAnimationFrame(draw); return; }
+    drew = any;
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
     const cr = coverRect();
     if (any && cr) {
       ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(photo, cr[0], cr[1], cr[2], cr[3]);
-      ctx.globalCompositeOperation = 'destination-in'; ctx.drawImage(mask, 0, 0);
+      ctx.globalCompositeOperation = 'destination-in'; ctx.drawImage(mask, 0, 0, cv.width, cv.height);
       ctx.globalCompositeOperation = 'source-over';
     }
-    place();
+    if (!going && now < dirty) place();
     requestAnimationFrame(draw);
   };
   const start = () => requestAnimationFrame(draw);
@@ -108,8 +116,8 @@
     const p = P[i];
     if (i !== on) {
       const prev = on; on = i;
-      doors.forEach((d, j) => d.classList.toggle('is-on', j === i)); $('.doors').classList.add('has-on');
-      if (p.r < 2) { p.x = p.sx = x; p.y = p.sy = y; }
+      doors.forEach((d, j) => d.classList.toggle('is-on', j === i)); $('.doors').classList.add('has-on'); dirty = performance.now() + 1500;
+      if (p.r < 2) { p.x = p.sx = p.tx = x; p.y = p.sy = p.ty = y; }
       G.killTweensOf(p);
       if (reduce) { p.r = reach(i); p.a = 1; }
       else G.to(p, { r: reach(i), a: 1, duration: 1.6, ease: 'expo.out' });
@@ -118,10 +126,18 @@
     p.tx = x; p.ty = y;
   };
   const close = (i) => { const p = P[i]; G.killTweensOf(p); G.to(p, { r: 0, a: 0, duration: reduce ? 0 : 1.1, ease: 'power3.inOut' }); doors[i].classList.remove('is-on'); };
-  const none = () => { if (on > -1 && !going) { close(on); on = -1; $('.doors').classList.remove('has-on'); } };
+  const none = () => { if (on > -1 && !going) { close(on); on = -1; $('.doors').classList.remove('has-on'); dirty = performance.now() + 1500; } };
 
+  /* first intent: fetch that landing and decode the shared stage images, so the hand-over never waits on the network or a decode */
+  const warmed = new Set();
+  const warm = (d) => {
+    const href = d.getAttribute('href'); if (warmed.has(href)) return; warmed.add(href);
+    const l = document.createElement('link'); l.rel = 'prefetch'; l.href = href; l.as = 'document'; document.head.appendChild(l);
+    if (warmed.size === 1) stage.querySelectorAll('img').forEach((im) => { im.loading = 'eager'; if (im.decode) im.decode().catch(() => {}); });
+  };
   doors.forEach((d, i) => {
-    d.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { pointerSeen = true; open(i, e.clientX, e.clientY); } });
+    d.addEventListener('pointerdown', () => warm(d)); d.addEventListener('focus', () => warm(d));
+    d.addEventListener('pointerenter', (e) => { warm(d); if (e.pointerType === 'mouse') { pointerSeen = true; open(i, e.clientX, e.clientY); } });
     d.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') { if (on !== i) open(i, e.clientX, e.clientY); else { P[i].tx = e.clientX; P[i].ty = e.clientY; } } });
     d.addEventListener('focus', () => { if (pointerSeen && document.documentElement.dataset.input === 'pointer') return; const R = d.getBoundingClientRect(); open(i, R.left + R.width / 2, R.top + R.height * 0.45); });
     d.addEventListener('click', (e) => { e.preventDefault(); const R = d.getBoundingClientRect(); go(i, e.clientX || R.left + R.width / 2, e.clientY || R.top + R.height / 2); });
@@ -134,8 +150,12 @@
     const d = doors[i], href = d.getAttribute('href');
     try { sessionStorage.setItem('jks-gate', '1'); localStorage.setItem('jks-lang', d.dataset.lang); } catch (_) {}
     if (reduce) { location.href = href; return; }
-    gate.classList.add('is-going');
-    P.forEach((p, j) => { if (j !== i) { G.killTweensOf(p); G.to(p, { r: 0, a: 0, duration: 0.9, ease: 'power3.inOut' }); } });
+    gate.classList.add('is-going'); bloomTimers.forEach(clearTimeout); if (intro) intro.progress(1);
+    /* the mark and place line carry an inline opacity from their intro tween, so the class rule cannot fade them: tween them out */
+    G.killTweensOf(['.gate-mark', '.gate-place']); G.to(['.gate-mark', '.gate-place'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
+    /* the other doors: on touch (all bloomed) they drop out at once, so only one bloom is painted while it takes the screen;
+       the chosen bloom covers them within a few frames anyway */
+    P.forEach((p, j) => { if (j !== i) { G.killTweensOf(p); if (touch) { p.r = 0; p.a = 0; } else G.to(p, { r: 0, a: 0, duration: 0.9, ease: 'power3.inOut' }); } });
     const p = P[i]; if (p.r < 2) { p.x = p.sx = x; p.y = p.sy = y; }
     G.killTweensOf(p);
     const tl = G.timeline({ onComplete: () => { location.href = href; } });
@@ -149,13 +169,14 @@
   /* ---------- arrival: the drawing appears like ink, door names rise ---------- */
   place();
   if (reduce) { G.set(line, { opacity: 1 }); return; }
-  const tl = G.timeline({ delay: 0.15 });
+  const tl = intro = G.timeline({ delay: 0.15 });
   tl.fromTo(line, { opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)', duration: 2.4, ease: 'power3.inOut' }, 0)
     .fromTo($$('.door-name, .door-code'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.09, ease: 'expo.out', clearProps: 'opacity,transform', onStart: () => gate.classList.add('is-intro'), onComplete: () => gate.classList.remove('is-intro') }, 0.5)
     .from(['.gate-mark', '.gate-place'], { opacity: 0, duration: 1.2, ease: 'expo.out' }, 0.9);
   /* touch: each door blooms once in sequence (Horizonte opens its panels 200 ms apart on touch) */
-  if (touch) tl.add(() => doors.forEach((d, i) => setTimeout(() => {
+  if (touch) tl.add(() => doors.forEach((d, i) => bloomTimers.push(setTimeout(() => {
+    if (going) return;
     const R = d.getBoundingClientRect(), p = P[i]; p.x = p.sx = p.tx = R.left + R.width / 2; p.y = p.sy = p.ty = R.top + R.height / 2;
-    G.to(p, { r: Math.max(R.width, R.height) * 1.15, a: 1, duration: 1.8, ease: 'expo.out' }); d.classList.add('is-on'); gate.classList.add('is-bloomed');
-  }, 300 + i * 220)), 1.8);
+    G.to(p, { r: Math.max(R.width, R.height) * 1.15, a: 1, duration: 1.8, ease: 'expo.out' }); d.classList.add('is-on'); gate.classList.add('is-bloomed'); dirty = performance.now() + 1500;
+  }, 300 + i * 220))), 1.8);
 })();
