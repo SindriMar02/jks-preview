@@ -89,7 +89,7 @@
     if (!reduce) {
       if (!fromGate) {
         const tl = G.timeline();
-        tl.from(photo, { scale: 1.12, duration: 2.2, ease: 'power3.out' }, 0).from(cut, { scale: 1.16, duration: 2.2, ease: 'power3.out' }, 0);
+        tl.fromTo([photo, cut], { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2, ease: 'power2.out' }, 0);
         tl.add(lettersIn(0.55), 0);
         tl.fromTo([desc, $('.hero-loc', hero), $('.hero-scroll', hero), hd], { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: DE }, 0.9);
       } else {
@@ -114,8 +114,7 @@
     if (Split && desc) { const sp = new Split(desc, { type: 'lines' }); G.to(sp.lines, { yPercent: 20, autoAlpha: 0, stagger: -0.15, ease: 'none', scrollTrigger: { trigger: hero, start: 0, end: () => innerHeight * 0.5, scrub: true } }); }
     G.to([$('.hero-loc', hero), $('.hero-scroll', hero)], { autoAlpha: 0, ease: 'none', scrollTrigger: { trigger: hero, start: 0, end: () => innerHeight * 0.4, scrub: true } });
     /* the flight (sequence stand-in, ours): photo and cutout dolly in at different rates toward the island */
-    G.to(photo, { scale: 1.28, ease: 'none', transformOrigin: '50% 58%', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: true } });
-    G.to(cut, { scale: 1.55, ease: 'none', transformOrigin: '50% 62%', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: true } });
+    /* no zoom: the photo and the palm cutout stay still and in register (Sindri 19 Nov: no zoom, no doubled palms) */
     /* titles (measured windows: k=2 viewports split across the titles, in + out each scrubbed) */
     const n = titles.length, k = 2;
     titles.forEach((t, i) => {

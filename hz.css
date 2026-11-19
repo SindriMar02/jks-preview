@@ -676,6 +676,9 @@ html.no-motion .hero .wm-l{opacity:1}
 
 @media(max-width:1023px){.mp-pt--edge .mp-lbl{display:none}}
 
+/* the hero wordmark never overflows: height-led size, capped by width (the vector is 5.857em wide) */
+@media(min-width:1024px){.stage-word{font-size:min(calc(220/var(--viewheight)*100vh),calc(100vw*.86/5.857))}}
+
 /* focus-guard.css: pairs with focus-guard.js. No ring after a tap or a click; every ring for the keyboard.
    Text fields keep theirs (the user is typing there whatever opened it). */
 html[data-input="pointer"] :focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) { outline: none; }
